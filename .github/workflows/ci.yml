@@ -1,0 +1,43 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit tests (plain + ASan/UBSan)
+        run: make test-c test-san
+      - name: Fuzz (ASan/UBSan, coverage-guided) and coverage
+        run: make fuzz FUZZ_ITERS=500000
+      - uses: actions/upload-artifact@v4
+        with: { name: fuzz-coverage, path: build/fuzz/coverage.txt }
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.24" }
+      - run: make test-go
+
+  hil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.24" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Set up vcan (optional test)
+        run: sudo scripts/vcan_setup.sh || echo "vcan unavailable; test will skip"
+      - run: make test-hil
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config -q
+      - run: docker compose --profile test run --rm tests

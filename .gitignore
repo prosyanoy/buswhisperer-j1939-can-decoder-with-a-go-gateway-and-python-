@@ -1,0 +1,30 @@
+# build output
+build/
+*.o
+*.a
+*.gcda
+*.gcno
+*.gcov
+gateway/gateway
+*.pb
+
+# dependencies / environments
+.venv/
+venv/
+node_modules/
+vendor/
+
+# caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.cache/
+
+# secrets / local config
+.env
+.env.*
+!.env.example
+
+# fuzzing artifacts
+crash-*
+corpus/

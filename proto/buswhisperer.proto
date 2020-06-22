@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package buswhisperer.v1;
+
+// One decoded J1939 signal. Numeric signals set `value`; ASCII signals (e.g. VIN)
+// set `text`. Proto3 default values (0 / "") are omitted on the wire.
+message Signal {
+  uint64 timestamp_us   = 1;  // capture time, microseconds
+  uint32 source_address = 2;
+  uint32 pgn            = 3;
+  string name           = 4;
+  string unit           = 5;
+  double value          = 6;
+  string text           = 7;
+}
+
+// A batch of signals. Files are a stream of length-delimited SignalBatch
+// messages (varint length prefix); the HTTP sink POSTs exactly one per request
+// with Content-Type: application/x-protobuf.
+message SignalBatch {
+  uint64          sequence = 1;  // starts at 1, increments per batch
+  repeated Signal signals  = 2;
+}

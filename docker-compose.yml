@@ -1,0 +1,21 @@
+# `docker compose up --build`           replay data/sample.log through the gateway to the receiver
+# `docker compose run --rm tests`       run the whole test-suite in a container
+services:
+  receiver:
+    build: { context: ., target: receiver }
+    environment:
+      PORT: "8080"
+    ports: ["8080:8080"]
+
+  gateway:
+    build: { context: ., target: gateway }
+    depends_on: [receiver]
+    environment:
+      BW_SINK: http
+      BW_HTTP_URL: http://receiver:8080/ingest
+      BW_BATCH_SIZE: ${BW_BATCH_SIZE:-100}
+      BW_HTTP_RETRIES: ${BW_HTTP_RETRIES:-10}
+
+  tests:
+    profiles: ["test"]
+    build: { context: ., target: builder }
